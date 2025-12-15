@@ -10,27 +10,6 @@ TODO = NotImplementedError
 
 
 
-class BingoBean():
-    def __init__(self, parentBoard: BingoBoard, indices: list[int], nickname: str):
-        self.parentBoard = parentBoard
-        self.indices = indices
-        self.nickname = nickname
-    
-    def __getitem__(self, index: int) -> bool:
-        return self.parentBoard.fields[self.indices[index]]
-    
-    def __setitem__(self, index: int, value: bool):
-        self.parentBoard.fields[self.indices[index]] = value
-    
-    def __iter__(self):
-        return (self.parentBoard.fields[index] for index in self.indices)
-    
-    def __repr__(self):
-        return f"<BingoBean \"{self.nickname}\" | {list(self)}>"
-
-
-
-
 class BingoBoard():
     def __init__(self, width: int = 5, height: int = 5):
         """
@@ -159,3 +138,24 @@ class BingoBoard():
     
     def show(self):
         raise TODO
+
+
+
+
+class BingoBean():
+    def __init__(self, parentBoard: BingoBoard, indices: list[int], nickname: str):
+        self.parentBoard = parentBoard
+        self.indices = indices
+        self.nickname = nickname
+    
+    def __getitem__(self, index: int) -> bool:
+        return self.parentBoard.fields[self.indices[index]]
+    
+    def __setitem__(self, index: int, value: bool):
+        self.parentBoard.fields[self.indices[index]] = value
+    
+    def __iter__(self):
+        return (self.parentBoard.fields[index] for index in self.indices)
+    
+    def __repr__(self):
+        return f"<BingoBean \"{self.nickname}\" | {list(self)}>"
