@@ -27,11 +27,10 @@ class BingoBoard():
         self.totalBoardSize = self.width * self.height
         self.initAndClearFields()
         
-        indicesInFirstRow = range(self.width) # example with width=height=5: [0,1,2,3,4]
         self.rowBingos = [
             BingoBean(
                 parentBoard=self,
-                indices=[index * rowIndex for index in indicesInFirstRow], # example with width=height=5: [0,1,2,3,4] for rowIndex=0, [5,6,7,8,9] for rowIndex=1 etc.
+                indices=list(range(rowIndex * self.width, (rowIndex + 1) * self.width)), # example with width=height=5: [0,1,2,3,4] for rowIndex=0, [5,6,7,8,9] for rowIndex=1 etc.
                 nickname=f"row {rowIndex}"
             ) for rowIndex in range(self.height)
         ]
@@ -49,7 +48,7 @@ class BingoBoard():
         self.downwardDiagonalBingos = [
             BingoBean(
                 parentBoard=self,
-                indices=range(topIndex, bottomIndex, downwardDiagonalDeltaStep),
+                indices=list(range(topIndex, bottomIndex + 1, downwardDiagonalDeltaStep)),
                 nickname=f"downward diagonal from {topIndex} to {bottomIndex}"
             ) for topIndex in range(self.totalBoardSize - downwardDiagonalDeltaTotal)
             if (self.yDistance(topIndex, (bottomIndex := topIndex + downwardDiagonalDeltaTotal)) == diagonalYOffset) # NOTE: could be optimized
@@ -59,7 +58,7 @@ class BingoBoard():
         self.upwardDiagonalBingos = [
             BingoBean(
                 parentBoard=self,
-                indices=range(topIndex, bottomIndex, upwardDiagonalDeltaStep),
+                indices=list(range(topIndex, bottomIndex + 1, upwardDiagonalDeltaStep)),
                 nickname=f"upward diagonal from {bottomIndex} to {topIndex}" # NOTE: starting from bottom here for easier visual differentiation (example with width=height=5: "upward diagonal from 20 to 4")
             ) for topIndex in range(diagonalXOffset, self.totalBoardSize - diagonalXOffset - upwardDiagonalDeltaTotal)
             if (self.yDistance(topIndex, (bottomIndex := topIndex + upwardDiagonalDeltaTotal)) == diagonalYOffset) # NOTE: could be optimized
