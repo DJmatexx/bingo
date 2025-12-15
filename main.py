@@ -65,34 +65,38 @@ class BingoBoard():
             if (self.yDistance(topIndex, (bottomIndex := topIndex + upwardDiagonalDeltaTotal)) == diagonalYOffset) # NOTE: could be optimized
         ]
         
-        xCenter: float = self.width / 2
-        yCenter: float = self.height / 2
+        xCenter: float = (self.width - 1) / 2
+        yCenter: float = (self.height - 1) / 2
         # NOTE: the following creates a list of the (1 to 4) central field indices on the board by intersecting the central (1 to 2) columns with the central (1 to 2) rows
         self.freeSpaceCandidates = list(
-            set(self.rowBingos[math.floor(yCenter)].indices) &
-            set(self.rowBingos[math.ceil(yCenter)].indices) &
-            set(self.columnBingos[math.floor(xCenter)].indices) &
-            set(self.columnBingos[math.ceil(xCenter)].indices)
+            (
+                set(self.rowBingos[math.floor(yCenter)].indices) |
+                set(self.rowBingos[math.ceil(yCenter)].indices)
+            ) &
+            (
+                set(self.columnBingos[math.floor(xCenter)].indices) |
+                set(self.columnBingos[math.ceil(xCenter)].indices)
+            )
         )
     
     
     # CHECK: needed?
-    def columnIndexOfField(index: uint) -> uint:
+    def columnIndexOfField(self, index: uint) -> uint:
         if (index >= self.totalBoardSize):
             raise IndexError(f"index {index} is out of bounds of the board")
         return index % self.width
     
-    def rowIndexOfField(index: uint) -> uint:
+    def rowIndexOfField(self, index: uint) -> uint:
         if (index >= self.totalBoardSize):
             raise IndexError(f"index {index} is out of bounds of the board")
         return math.floor(index / self.width)
     
     # CHECK: needed?
-    def xDistance(index1: uint, index2: uint) -> int:
-        return columnIndexOfField(index2) - columnIndexOfField(index1)
+    def xDistance(self, index1: uint, index2: uint) -> int:
+        return self.columnIndexOfField(index2) - self.columnIndexOfField(index1)
     
-    def yDistance(index1: uint, index2: uint) -> int:
-        return rowIndexOfField(index2) - rowIndexOfField(index1)
+    def yDistance(self, index1: uint, index2: uint) -> int:
+        return self.rowIndexOfField(index2) - self.rowIndexOfField(index1)
     
     
     def initAndClearFields(self):
@@ -115,7 +119,7 @@ class BingoBoard():
         if (freeSpacesAmt < 0):
             raise ValueError(f"The label list provided has length {labelsAmt}, but the board only has {self.totalBoardSize} fields.")
         if (freeSpacesAmt > maxFreeSpacesAmt):
-            raise ValueError(f"The label list provided has length {labelsAmt}, leaving {freeSpacesAmt} free spaces, but a board with dimensions {this.width}x{this.height} should have at most {maxFreeSpacesAmt}.")
+            raise ValueError(f"The label list provided has length {labelsAmt}, leaving {freeSpacesAmt} free spaces, but a board with dimensions {self.width}x{self.height} should have at most {maxFreeSpacesAmt}.")
         freeSpaceIndices: list = sorted(random.sample(self.freeSpaceCandidates, freeSpacesAmt)) # NOTE: indices need to be in ascending order, s.t. free spaces remain at the position they were inserted.
         
         if isRandomizeEnabled:
@@ -133,8 +137,8 @@ class BingoBoard():
     
     def __repr__(self):
         if (self.labels is None):
-            return f"<empty BingoBoard with dimensions {this.width}x{this.height}>"
-        return f"<BingoBoard with dimensions {this.width}x{this.height}>"
+            return f"<empty BingoBoard with dimensions {self.width}x{self.height}>"
+        return f"<BingoBoard with dimensions {self.width}x{self.height}>"
     
     def show(self):
         raise TODO
