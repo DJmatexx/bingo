@@ -1,5 +1,3 @@
-# pyright: reportUnknownMemberType = false
-
 import math
 import random
 import json
@@ -295,7 +293,7 @@ class BingoBoard():
                     outline=(outlineColorFieldCaptured if isCaptured else outlineColorFieldUncaptured),
                     width=(fieldOutlineWidthCaptured_px if isCaptured else fieldOutlineWidthUncaptured_px)
                 )
-                draw.multiline_text(
+                draw.multiline_text( # pyright: ignore[reportUnknownMemberType]
                     (currentLabelTextAnchorX, currentLabelTextAnchorY),
                     text=labelText,
                     fill=(textColorFreeSpace if isFreeSpace else textColorStd),
