@@ -1,5 +1,5 @@
 ```python
->>> from main import BingoBoard
+>>> from bingo import BingoBoard
 >>> board = BingoBoard(3,3)
 >>> labels1 = BingoBoard.enterFieldLabels()
 ```
@@ -92,7 +92,7 @@ Then, we can decrease the font size a bit:
 
 Now, the board state can be reloaded from the save file:
 ```python
->>> from main import BingoBoard
+>>> from bingo import BingoBoard
 >>> board = BingoBoard.importState("board_v2.json")
 >>> board.show(**board.savedLayout)
 >>> board.stats()
