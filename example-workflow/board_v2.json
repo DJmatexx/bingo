@@ -1,0 +1,91 @@
+{
+    "labels": [
+        "Anzeige seit\n>5min auf 0min",
+        "Bahn endet\npl\u00f6tzlich in\nNeugraben",
+        "(Versuchte)\nBrandstiftung",
+        "Bahn kommt in\nnegativer Zeit",
+        "FREE\nSPACE",
+        "Bahn f\u00e4llt\nwegen\nWetter aus",
+        "Bahn zu voll\nzum Einsteigen",
+        "Baustelle auf\nder Strecke",
+        "Personen auf\nGleisen"
+    ],
+    "values": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+    ],
+    "colsAmt": 3,
+    "rowsAmt": 3,
+    "freeSpaces": [
+        4
+    ],
+    "layout": {
+        "fieldDimensions_px": [
+            200,
+            200
+        ],
+        "fieldCornerRadius_px": 20,
+        "fieldOutlineWidthUncaptured_px": 0,
+        "fieldOutlineWidthCaptured_px": 5,
+        "fieldSpacing_px": [
+            15,
+            15
+        ],
+        "margin_px": [
+            40,
+            40
+        ],
+        "fontPath": "Arcon-Regular",
+        "fontSizeStd_px": 28,
+        "fontSizeFreeSpace_px": 50,
+        "lineSpacingStd_px": 5,
+        "lineSpacingFreeSpace_px": 10,
+        "textColorStd": [
+            0,
+            0,
+            0,
+            255
+        ],
+        "textColorFreeSpace": [
+            32,
+            128,
+            64,
+            255
+        ],
+        "outlineColorFieldUncaptured": [
+            0,
+            0,
+            0
+        ],
+        "outlineColorFieldCaptured": [
+            0,
+            0,
+            128
+        ],
+        "bgColorImg": [
+            255,
+            255,
+            255,
+            255
+        ],
+        "bgColorField": [
+            224,
+            224,
+            224,
+            255
+        ],
+        "bgColorFreeSpace": [
+            224,
+            224,
+            224,
+            255
+        ]
+    }
+}

@@ -2,21 +2,62 @@
 
 import math
 import random
+import json
 from PIL import Image, ImageDraw, ImageFont
+from typing import TypedDict, Any
 
 
 
-
-uint = int # TODO: add uint from commons3
-RGBColor = tuple[uint,uint,uint]
-RGBAColor = tuple[uint,uint,uint,uint]
 class TODO(NotImplementedError):
     pass
+
+uint = int # TODO: add uint from commons3
+
+RGBColor = tuple[uint,uint,uint]
+RGBAColor = tuple[uint,uint,uint,uint]
+
+
+
+
+def convertToTypedDict(obj: dict[str, Any], targetType: type) -> dict[str, Any]:
+    d: dict[str, Any] = {}
+    for (k, t) in targetType.__annotations__.items():
+        d[k] = t(obj[k])
+    return d
 
 
 
 
 class BingoBoard():
+    class Layout(TypedDict, total=False):
+        fieldDimensions_px: tuple[uint, uint]
+        fieldCornerRadius_px: uint
+        fieldOutlineWidthUncaptured_px: uint
+        fieldOutlineWidthCaptured_px: uint
+        fieldSpacing_px: tuple[uint, uint]
+        margin_px: tuple[uint, uint]
+        fontPath: str
+        fontSizeStd_px: uint
+        fontSizeFreeSpace_px: uint
+        lineSpacingStd_px: uint
+        lineSpacingFreeSpace_px: uint
+        textColorStd: RGBAColor
+        textColorFreeSpace: RGBAColor
+        outlineColorFieldUncaptured: RGBColor
+        outlineColorFieldCaptured: RGBColor
+        bgColorImg: RGBAColor
+        bgColorField: RGBAColor
+        bgColorFreeSpace: RGBAColor
+        
+    class State(TypedDict):
+        labels: list[str]
+        values: list[bool]
+        colsAmt: uint
+        rowsAmt: uint
+        freeSpaces: list[uint]
+        layout: 'BingoBoard.Layout'
+                
+    
     def __init__(self, width: int = 5, height: int = 5):
         """
         Takes width and height as arguments, can be filled with labels later using its .fill() method.
@@ -31,6 +72,7 @@ class BingoBoard():
         self.width = width
         self.height = height
         self.totalBoardSize = self.width * self.height
+        self.savedLayout: (BingoBoard.Layout | None) = None
         self.initAndClearFields()
         
         self.rowBingos = [
@@ -117,7 +159,7 @@ class BingoBoard():
         try:
             while True:
                 labelText += '\n' + input("|> ")
-        except EOFError:
+        except (EOFError, KeyboardInterrupt):
             pass
         print("") # avoid next print being on same line
         return labelText
@@ -129,8 +171,8 @@ class BingoBoard():
         labels.append(cls.enterFieldLabel(disclaimer=''))
         try:
             while True:
-                labels.append(cls.enterFieldLabel(disclaimer="Next label:"))
-        except EOFError:
+                labels.append(cls.enterFieldLabel(disclaimer=f"Total labels entered: {len(labels)}. Next label:"))
+        except (EOFError, KeyboardInterrupt):
             pass
         print("") # avoid next print being on same line
         return labels
@@ -187,18 +229,19 @@ class BingoBoard():
     
     
     def show(self,
-             fieldWidth_px: uint = 200,
-             fieldHeight_px: uint = 200,
+             imgSavePath: (str | None) = None,
+             boardStateSavePath: (str | None) = None,
+             doReturnBoardState: bool = False,
+             doCacheLayout: bool = False, # NOTE: layout will be included in state export either way
+             fieldDimensions_px: tuple[uint, uint] = (200, 200),
              fieldCornerRadius_px: uint = 20,
              fieldOutlineWidthUncaptured_px: uint = 0,
              fieldOutlineWidthCaptured_px: uint = 5,
-             fieldSpacingX_px: uint = 15,
-             fieldSpacingY_px: uint = 15,
-             marginX_px: uint = 40,
-             marginY_px: uint = 40,
-             font: str = '',
+             fieldSpacing_px: tuple[uint, uint] = (15, 15),
+             margin_px: tuple[uint, uint] = (40, 40),
+             fontPath: str = '',
              fontSizeStd_px: uint = 30,
-             fontSizeFreeSpace_px: uint = 60,
+             fontSizeFreeSpace_px: uint = 50,
              lineSpacingStd_px: uint = 5,
              lineSpacingFreeSpace_px: uint = 10,
              textColorStd: RGBAColor = (0,0,0,255), # black
@@ -208,15 +251,27 @@ class BingoBoard():
              bgColorImg: RGBAColor = (255,255,255,255), # white
              bgColorField: RGBAColor = (224,224,224,255), # light grey
              bgColorFreeSpace: RGBAColor = (224,224,224,255), # light grey
-            ):
+            ) -> (State | None):
         if self.labels is None:
             raise RuntimeError("Trying to show empty BingoBoard. Supply with labels first using .fill()")
+        
+        fieldWidth_px, fieldHeight_px = fieldDimensions_px
+        fieldSpacingX_px, fieldSpacingY_px = fieldSpacing_px
+        marginX_px, marginY_px = margin_px
         
         imgWidth = (2 * marginX_px) + (self.width * fieldWidth_px) + ((self.width - 1) * fieldSpacingX_px)
         imgHeight = (2 * marginY_px) + (self.height * fieldHeight_px) + ((self.height - 1) * fieldSpacingY_px)
         img = Image.new(mode='RGBA', size=(imgWidth, imgHeight), color=bgColorImg)
         
-        pilFontObj = ImageFont.truetype(font, size=fontSizeStd_px) if font else None
+        if fontPath:
+            try:
+                fontStd = ImageFont.truetype(fontPath, size=fontSizeStd_px)
+                fontFreeSpace = ImageFont.truetype(fontPath, size=fontSizeFreeSpace_px)
+            except OSError:
+                print(f"Font <{fontPath}> could not be opened. Using default")
+                fontStd = fontFreeSpace = None
+        else:
+            fontStd = fontFreeSpace = None
         
         draw = ImageDraw.Draw(img)
         
@@ -243,7 +298,7 @@ class BingoBoard():
                     (currentLabelTextAnchorX, currentLabelTextAnchorY),
                     text=labelText,
                     fill=(textColorFreeSpace if isFreeSpace else textColorStd),
-                    font=pilFontObj,
+                    font=(fontFreeSpace if isFreeSpace else fontStd),
                     anchor='mm', # xy center
                     spacing=(lineSpacingFreeSpace_px if isFreeSpace else lineSpacingStd_px),
                     align='center',
@@ -257,6 +312,71 @@ class BingoBoard():
             currentLabelTextAnchorY += fieldHeight_px + fieldSpacingY_px
         
         img.show()
+        
+        if (imgSavePath is not None):
+            img.save(imgSavePath)
+
+        layout: BingoBoard.Layout = {
+            'fieldDimensions_px': fieldDimensions_px,
+            'fieldCornerRadius_px': fieldCornerRadius_px,
+            'fieldOutlineWidthUncaptured_px': fieldOutlineWidthUncaptured_px,
+            'fieldOutlineWidthCaptured_px': fieldOutlineWidthCaptured_px,
+            'fieldSpacing_px': fieldSpacing_px,
+            'margin_px': margin_px,
+            'fontPath': fontPath,
+            'fontSizeStd_px': fontSizeStd_px,
+            'fontSizeFreeSpace_px': fontSizeFreeSpace_px,
+            'lineSpacingStd_px': lineSpacingStd_px,
+            'lineSpacingFreeSpace_px': lineSpacingFreeSpace_px,
+            'textColorStd': textColorStd,
+            'textColorFreeSpace': textColorFreeSpace,
+            'outlineColorFieldUncaptured': outlineColorFieldUncaptured,
+            'outlineColorFieldCaptured': outlineColorFieldCaptured,
+            'bgColorImg': bgColorImg,
+            'bgColorField': bgColorField,
+            'bgColorFreeSpace': bgColorFreeSpace
+        }
+        
+        if doCacheLayout:
+            self.savedLayout = layout
+        
+        if ((boardStateSavePath is None) and not doReturnBoardState):
+            return
+        
+        state: BingoBoard.State = {
+            'labels': self.labels,
+            'values': self.fields,
+            'colsAmt': self.width,
+            'rowsAmt': self.height,
+            'freeSpaces': self.freeSpaceIndices,
+            'layout': layout
+        }
+        
+        if (boardStateSavePath is not None):
+            with open(boardStateSavePath, 'w', encoding='utf-8') as f:
+                json.dump(state, f, indent=4)
+        
+        if doReturnBoardState:
+            return state
+    
+    
+    @classmethod
+    def importState(cls, stateOrPath: (State | str)) -> 'BingoBoard':
+        if isinstance(stateOrPath, str):
+            with open(stateOrPath, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+        else:
+            state = stateOrPath
+        
+        board = BingoBoard(width=state['colsAmt'], height=state['rowsAmt'])
+        board.fill(state['labels'], isRandomizeEnabled=False)
+        board.freeSpaceIndices = state['freeSpaces']
+        board.fields = state['values']
+        
+        board.savedLayout = convertToTypedDict(state['layout'], BingoBoard.Layout) # pyright: ignore[reportAttributeAccessIssue, reportArgumentType]
+        
+        return board
+
 
 
 
