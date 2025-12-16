@@ -111,7 +111,8 @@ class BingoBoard():
             ) for topIndex in range(diagonalXOffset, self.totalBoardSize - diagonalXOffset - upwardDiagonalDeltaTotal)
             if (self.yDistance(topIndex, (bottomIndex := topIndex + upwardDiagonalDeltaTotal)) == diagonalYOffset) # NOTE: could be optimized
         ]
-        
+        self.allBingos = self.rowBingos + self.columnBingos + self.downwardDiagonalBingos + self.upwardDiagonalBingos
+                
         xCenter: float = (self.width - 1) / 2
         yCenter: float = (self.height - 1) / 2
         # NOTE: the following creates a list of the (1 to 4) central field indices on the board by intersecting the central (1 to 2) columns with the central (1 to 2) rows
@@ -376,6 +377,12 @@ class BingoBoard():
         board.savedLayout = convertToTypedDict(state['layout'], BingoBoard.Layout) # pyright: ignore[reportAttributeAccessIssue, reportArgumentType]
         
         return board
+    
+    
+    def stats(self):
+        # completionStats = {bingo.nickname: bingo.fractionCompleted() for bingo in self.allBingos}
+        for bingo in self.allBingos:
+            print(f"{bingo.nickname}: {bingo.fractionCompleted() * 100 :.2f}% completed")
 
 
 
@@ -397,3 +404,6 @@ class BingoBean():
     
     def __repr__(self):
         return f"<BingoBean \"{self.nickname}\" | {list(self)}>"
+    
+    def fractionCompleted(self) -> float:
+        return list(self).count(True) / len(self.indices)

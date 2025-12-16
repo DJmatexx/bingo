@@ -61,6 +61,9 @@ Total labels entered: 8. Next label:
 
 ![First version with overflowing text](./board_v1.png)
 
+The text is overflowing in some fields. We can fix that!
+First, let's add a line break in the 6th field (which has index 5):
+
 ```python
 >>> board.editFieldLabel(5)
 ```
@@ -74,6 +77,8 @@ When done, press Enter, then EOF
 |> Wetter aus
 |> ^Z
 ```
+
+Then, we can decrease the font size a bit:
 
 ```python
 >>> board.show(imgSavePath="board_v2.png", boardStateSavePath="board_v2.json", fontPath='Arcon-Regular', fontSizeStd_px=28)
@@ -90,4 +95,16 @@ Now, the board state can be reloaded from the save file:
 >>> from main import BingoBoard
 >>> board = BingoBoard.importState("board_v2.json")
 >>> board.show(**board.savedLayout)
+>>> board.stats()
+```
+
+```
+row 0: 0.00% completed
+row 1: 33.33% completed
+row 2: 0.00% completed
+column 0: 0.00% completed
+column 1: 33.33% completed
+column 2: 0.00% completed
+downward diagonal from 0 to 8: 33.33% completed
+upward diagonal from 6 to 2: 33.33% completed
 ```
